@@ -176,27 +176,8 @@ export async function POST(request) {
 // GET: Get all products of the seller
 export async function GET(request) {
     try {
-        // Firebase Auth: Extract token from Authorization header
-        const authHeader = request.headers.get('authorization');
-        let userId = null;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const idToken = authHeader.split('Bearer ')[1];
-            const { getAuth } = await import('firebase-admin/auth');
-            const { initializeApp, applicationDefault, getApps } = await import('firebase-admin/app');
-            if (getApps().length === 0) {
-                initializeApp({ credential: applicationDefault() });
-            }
-            try {
-                const decodedToken = await getAuth().verifyIdToken(idToken);
-                userId = decodedToken.uid;
-            } catch (e) {
-                // Not signed in, userId remains null
-            }
-        }
-        const storeId = await authSeller(userId);
-        if (!storeId) return NextResponse.json({ error: "Not authorized" }, { status: 401 });
-
-        const products = await prisma.product.findMany({ where: { storeId }, orderBy: { createdAt: "desc" } });
+        // ADMIN/GLOBAL: Return all products, no auth required
+        const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
         return NextResponse.json({ products });
     } catch (error) {
         console.error(error);

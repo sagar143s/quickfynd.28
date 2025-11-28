@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/lib/useAuth";
 import Image from "next/image";
 import axios from "axios";
 
 // Admin-editable grid section for dashboard: title + manual product selection
 export default function AdminGridSectionEditor({ sectionId, onSave }) {
+    const { getToken } = useAuth();
   const [title, setTitle] = useState("");
   const [allProducts, setAllProducts] = useState([]);
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Fetch all products for selection
-    axios.get("/api/admin/products").then(res => setAllProducts(res.data.products || []));
+    // Fetch all products for selection (with Firebase Auth token)
+    getToken().then(token => {
+      if (!token) return;
+      axios.get("/api/store/product", {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => setAllProducts(res.data.products || []));
+    });
     // If editing, fetch section data
     if (sectionId) {
       axios.get(`/api/admin/grid-products/${sectionId}`).then(res => {
@@ -21,10 +28,11 @@ export default function AdminGridSectionEditor({ sectionId, onSave }) {
     }
   }, [sectionId]);
 
-  const handleProductToggle = (id) => {
-    setSelectedProductIds(ids =>
-      ids.includes(id) ? ids.filter(pid => pid !== id) : [...ids, id]
-    );
+  // Handle multi-select dropdown
+  const handleProductSelect = (e) => {
+    const options = Array.from(e.target.selectedOptions);
+    const ids = options.map(opt => opt.value);
+    setSelectedProductIds(ids.slice(0, 3)); // max 3
   };
 
   const handleSave = async () => {
@@ -49,27 +57,18 @@ export default function AdminGridSectionEditor({ sectionId, onSave }) {
         placeholder="e.g. Winter Essentials for You"
       />
       <label className="block mb-2 font-medium">Select Products (max 3)</label>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+      <select
+        multiple
+        className="border rounded px-3 py-2 w-full mb-4 h-32"
+        value={selectedProductIds}
+        onChange={handleProductSelect}
+      >
         {allProducts.map(product => (
-          <div
-            key={product.id}
-            className={`border rounded p-2 flex flex-col items-center cursor-pointer ${selectedProductIds.includes(product.id) ? 'border-orange-500 bg-orange-50' : 'border-gray-200'}`}
-            onClick={() => handleProductToggle(product.id)}
-          >
-            <Image src={product.image} alt={product.name} width={60} height={60} className="object-contain mb-1" />
-            <div className="text-xs text-center">{product.name}</div>
-            {product.label && (
-              <div className="text-xs font-semibold mt-1 text-green-600">{product.label}</div>
-            )}
-            <input
-              type="checkbox"
-              checked={selectedProductIds.includes(product.id)}
-              readOnly
-              className="mt-1"
-            />
-          </div>
+          <option key={product.id} value={product.id}>
+            {product.name}
+          </option>
         ))}
-      </div>
+      </select>
       <button
         className="bg-orange-600 text-white px-6 py-2 rounded font-semibold disabled:opacity-60"
         onClick={handleSave}

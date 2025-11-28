@@ -15,8 +15,15 @@ const PLACEHOLDER_IMG = "/default-store-logo.png";
 
 // products: [{ image, name, label, labelType }]
 export default function ProductGridSection({ title, products = [], viewAllPath = "#" }) {
+
   const [imgLoaded, setImgLoaded] = useState(Array(products.length).fill(false));
   const [imgError, setImgError] = useState(Array(products.length).fill(false));
+
+  // Reset image state arrays when products change length
+  React.useEffect(() => {
+    setImgLoaded(Array(products.length).fill(false));
+    setImgError(Array(products.length).fill(false));
+  }, [products.length]);
 
   // Ensure skeleton replaced within 1s if image not loaded
   React.useEffect(() => {
@@ -61,32 +68,49 @@ export default function ProductGridSection({ title, products = [], viewAllPath =
       <div className="grid grid-cols-2 gap-3">
         {products.length === 0 && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         {products.map((product, idx) => {
-          const imgSrc = Array.isArray(product.images) && product.images[0] ? product.images[0] : product.image;
+          let imgSrc = '';
+          if (Array.isArray(product.images) && typeof product.images[0] === 'string' && product.images[0]) {
+            imgSrc = product.images[0];
+          } else if (typeof product.image === 'string' && product.image.length > 0) {
+            imgSrc = product.image;
+          }
           const showPlaceholder = imgError[idx] || !imgSrc;
           return (
             <div key={idx} className="bg-white rounded-lg border border-gray-200 p-2 flex flex-col h-full">
               <div className="w-full aspect-square flex items-center justify-center mb-2 bg-gray-50 rounded">
                 {!imgLoaded[idx] && !showPlaceholder && <div className="w-16 h-16 bg-gray-200 rounded animate-pulse" />}
                 {showPlaceholder ? (
-                  <Image
+                  <img
                     src={PLACEHOLDER_IMG}
                     alt="No image"
                     width={150}
                     height={150}
                     className="object-contain rounded opacity-80"
-                    priority={idx < 2}
+                    style={{ maxWidth: 150, maxHeight: 150, width: '100%', height: '100%', transition: 'opacity 0.3s' }}
                   />
                 ) : (
-                  <Image
-                    src={imgSrc}
-                    alt={product.name}
-                    width={150}
-                    height={150}
-                    className={`object-contain rounded transition-opacity duration-300 ${imgLoaded[idx] ? 'opacity-100' : 'opacity-0'}`}
-                    priority={idx < 2}
-                    onLoadingComplete={() => handleImgLoad(idx)}
-                    onError={() => handleImgError(idx)}
-                  />
+                  <>
+                    <Image
+                      src={imgSrc}
+                      alt={product.name || 'Product image'}
+                      width={150}
+                      height={150}
+                      className={`object-contain rounded transition-opacity duration-300 ${imgLoaded[idx] ? 'opacity-100' : 'opacity-0'}`}
+                      priority={idx < 2}
+                      onLoadingComplete={() => handleImgLoad(idx)}
+                      onError={() => handleImgError(idx)}
+                    />
+                    {imgError[idx] && (
+                      <img
+                        src={PLACEHOLDER_IMG}
+                        alt="No image"
+                        width={150}
+                        height={150}
+                        className="object-contain rounded opacity-80"
+                        style={{ maxWidth: 150, maxHeight: 150, width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+                      />
+                    )}
+                  </>
                 )}
               </div>
               <div className="text-xs font-medium text-gray-800 truncate mb-1">{product.name}</div>

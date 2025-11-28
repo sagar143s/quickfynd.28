@@ -1,7 +1,7 @@
 // Homepage grid section config (persistent)
 model GridSection {
   id         Int      @id @default(autoincrement())
-  index      Int      // 0, 1, 2 for up to 3 sections
+  index      Int      @unique // 0, 1, 2 for up to 3 sections
   title      String
   path       String
   productIds String[]

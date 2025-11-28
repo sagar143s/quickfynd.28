@@ -105,10 +105,11 @@ export default function SmoothBrands({ data = brands }) {
             {data.map((brand, idx) => (
               <div
                 key={brand.name}
-                className="brand-card snap-start cursor-pointer flex items-center justify-center h-[300px] min-w-[66%] sm:min-w-[28.5%] lg:min-w-[16.5%] max-w-[220px]"
+                className="brand-card snap-start cursor-pointer flex items-end justify-center h-[220px] min-w-[40vw] sm:min-w-[28.5%] lg:min-w-[16.5%] max-w-[220px] pb-0 pt-0"
                 onDoubleClick={() => router.push(brand.path)}
+                style={{ paddingTop: 0, paddingBottom: 0 }}
               >
-                <Image src={brand.image} alt={brand.name} className="object-contain" width={200} height={280} priority={idx < 5} draggable={false} />
+                <Image src={brand.image} alt={brand.name} className="object-contain" width={200} height={180} priority={idx < 5} draggable={false} />
               </div>
             ))}
           </div>

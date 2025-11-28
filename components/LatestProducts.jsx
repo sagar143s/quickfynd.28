@@ -50,10 +50,13 @@ const ProductCard = ({ product }) => {
   const ratingValue = Math.round(product.averageRating || 0);
   const reviewCount = product.ratingCount || 0;
 
-  // Split price into integer and decimal, but only if price > 0
+  // Show 1 decimal on mobile, 2 on desktop
   const showPrice = Number(product.price) > 0 || Number(product.mrp) > 0;
-  const [intPrice, decPrice] = Number(product.price) > 0 ? (product.price?.toFixed(2) || '0.00').split('.') : [null, null];
-  const [intOrig, decOrig] = Number(product.mrp) > 0 ? (product.mrp?.toFixed(2) || '0.00').split('.') : [null, null];
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+  const priceFixed = Number(product.price) > 0 ? product.price.toFixed(isMobile ? 1 : 2) : null;
+  const mrpFixed = Number(product.mrp) > 0 ? product.mrp.toFixed(isMobile ? 1 : 2) : null;
+  const [intPrice, decPrice] = priceFixed ? priceFixed.split('.') : [null, null];
+  const [intOrig, decOrig] = mrpFixed ? mrpFixed.split('.') : [null, null];
 
   // Truncate product name to 25 characters
   const productName = (product.name || product.title || 'Untitled Product').length > 25
@@ -153,6 +156,13 @@ const ProductCard = ({ product }) => {
                   <span className="mr-1">₹</span>
                   <span>{intPrice}</span>
                   <span className="text-xs align-top ml-0.5">.{decPrice}</span>
+                  <style jsx>{`
+                    @media (max-width: 640px) {
+                      .text-xs.align-top.ml-0\.5 {
+                        font-size: 1rem;
+                      }
+                    }
+                  `}</style>
                 </p>
               )}
               {/* Original Price */}
@@ -161,6 +171,13 @@ const ProductCard = ({ product }) => {
                   <span className="mr-0.5">₹</span>
                   <span>{intOrig}</span>
                   <span className="text-[10px] align-top ml-0.5">.{decOrig}</span>
+                  <style jsx>{`
+                    @media (max-width: 640px) {
+                      .text-[10px].align-top.ml-0\.5 {
+                        font-size: 1rem;
+                      }
+                    }
+                  `}</style>
                 </p>
               )}
             </div>
@@ -219,14 +236,27 @@ const BestSelling = () => {
   const isLoading = products.length === 0;
 
   return (
-    <div className="px-4 my-16 max-w-7xl mx-auto">
+    <div
+      className="px-2 my-4 max-w-7xl mx-auto bestselling-bottom-margin"
+      style={{ marginTop: 0, paddingTop: 0, paddingBottom: 0 }}
+    >
+      <style jsx>{`
+        .bestselling-bottom-margin {
+          margin-bottom: 45px !important;
+        }
+        @media (max-width: 640px) {
+          .bestselling-bottom-margin {
+            margin-bottom: 10px !important;
+          }
+        }
+      `}</style>
       <Title
         title="Craziest sale of the year!"
         description="Grab the best deals before they're gone!"
         visibleButton={false}
       />
 
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-3 md:gap-6">
+      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-2 md:gap-4">
         {isLoading
           ? Array(displayQuantity).fill(0).map((_, idx) => (
               <div key={idx} className="bg-white rounded-2xl border border-gray-200 shadow-sm animate-pulse flex flex-col w-full h-full relative">
