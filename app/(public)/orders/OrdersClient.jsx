@@ -61,7 +61,7 @@ export default function OrdersClient() {
                 <div className="my-20 max-w-7xl mx-auto">
                     <PageTitle heading="My Orders" text={`Showing total ${orders.length} orders`} linkText={'Go to home'} />
 
-                    {/* If you display currency here, use ₹ instead of AED */}
+                    {/* If you display currency here, use ₹ instead of ₹ */}
                     <table className="w-full max-w-5xl text-slate-500 table-auto border-separate border-spacing-y-12 border-spacing-x-4">
                         <thead>
                             <tr className="max-sm:text-sm text-slate-600 max-md:hidden">

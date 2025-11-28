@@ -15,7 +15,7 @@ import { useAuth } from '@/lib/useAuth'
 export default function Dashboard() {
     const { user, loading: authLoading, getToken } = useAuth();
     console.log('[page.jsx] user:', user, 'authLoading:', authLoading);
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED'
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹'
     const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [dashboardData, setDashboardData] = useState({

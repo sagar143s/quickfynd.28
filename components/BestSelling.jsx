@@ -141,7 +141,7 @@ const ProductCard = ({ product }) => {
           <div className="flex items-center gap-2">
             {/* Current Price */}
             <p className="text-black font-bold text-base flex items-baseline">
-              <span className="mr-1">AED</span>
+              <span className="mr-1">₹</span>
               <span>{intPrice}</span>
               <span className="text-xs align-top ml-0.5">.{decPrice}</span>
             </p>
@@ -149,7 +149,7 @@ const ProductCard = ({ product }) => {
             {/* Original Price */}
             {product.mrp && product.mrp > product.price && (
               <p className="text-gray-400 text-xs line-through flex items-baseline">
-                <span className="mr-0.5">AED</span>
+                <span className="mr-0.5">₹</span>
                 <span>{intOrig}</span>
                 <span className="text-[10px] align-top ml-0.5">.{decOrig}</span>
               </p>

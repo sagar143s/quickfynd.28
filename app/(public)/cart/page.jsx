@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export default function Cart() {
 
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED';
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
     // TODO: Integrate Firebase Auth for user and token if needed
     const getToken = async () => null;
     const isSignedIn = false;

@@ -23,7 +23,7 @@ const OrderSummary = ({ totalPrice, items }) => {
     const { user, loading: authLoading, getToken } = useAuth();
     const isSignedIn = !!user;
     const dispatch = useDispatch();
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED';
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
     const router = useRouter();
     const addressList = useSelector(state => state.address.list);
     const addressFetchError = useSelector(state => state.address.error);

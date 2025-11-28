@@ -64,10 +64,10 @@ The form provides 3 default rows, but you can customize:
 #### How Savings Are Calculated
 - Savings = (MRP × Qty) - Price
 - Example: Bundle of 2
-  - MRP per item: AED 250
-  - Total MRP: AED 500
-  - Bundle Price: AED 169
-  - **You Save: AED 331**
+  - MRP per item: ₹ 250
+  - Total MRP: ₹ 500
+  - Bundle Price: ₹ 169
+  - **You Save: ₹ 331**
 
 ---
 

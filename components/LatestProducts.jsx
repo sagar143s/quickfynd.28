@@ -50,9 +50,10 @@ const ProductCard = ({ product }) => {
   const ratingValue = Math.round(product.averageRating || 0);
   const reviewCount = product.ratingCount || 0;
 
-  // Split price into integer and decimal
-  const [intPrice, decPrice] = (product.price?.toFixed(2) || '0.00').split('.')
-  const [intOrig, decOrig] = product.mrp?.toFixed(2).split('.') || ['0', '00']
+  // Split price into integer and decimal, but only if price > 0
+  const showPrice = Number(product.price) > 0 || Number(product.mrp) > 0;
+  const [intPrice, decPrice] = Number(product.price) > 0 ? (product.price?.toFixed(2) || '0.00').split('.') : [null, null];
+  const [intOrig, decOrig] = Number(product.mrp) > 0 ? (product.mrp?.toFixed(2) || '0.00').split('.') : [null, null];
 
   // Truncate product name to 25 characters
   const productName = (product.name || product.title || 'Untitled Product').length > 25
@@ -143,25 +144,28 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Price + Discount Badge */}
-        <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {/* Current Price */}
-            <p className="text-black font-bold text-base flex items-baseline">
-              <span className="mr-1">AED</span>
-              <span>{intPrice}</span>
-              <span className="text-xs align-top ml-0.5">.{decPrice}</span>
-            </p>
-
-            {/* Original Price */}
-            {product.mrp && product.mrp > product.price && (
-              <p className="text-gray-400 text-xs line-through flex items-baseline">
-                <span className="mr-0.5">AED</span>
-                <span>{intOrig}</span>
-                <span className="text-[10px] align-top ml-0.5">.{decOrig}</span>
-              </p>
-            )}
+        {showPrice && (
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {/* Current Price */}
+              {Number(product.price) > 0 && (
+                <p className="text-black font-bold text-base flex items-baseline">
+                  <span className="mr-1">₹</span>
+                  <span>{intPrice}</span>
+                  <span className="text-xs align-top ml-0.5">.{decPrice}</span>
+                </p>
+              )}
+              {/* Original Price */}
+              {Number(product.mrp) > 0 && Number(product.mrp) > Number(product.price) && Number(product.price) > 0 && (
+                <p className="text-gray-400 text-xs line-through flex items-baseline">
+                  <span className="mr-0.5">₹</span>
+                  <span>{intOrig}</span>
+                  <span className="text-[10px] align-top ml-0.5">.{decOrig}</span>
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Cart Button with Badge - Bottom Right */}

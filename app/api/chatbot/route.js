@@ -57,15 +57,15 @@ export async function POST(request) {
         const systemContext = `You are Qui's friendly shopping assistant. Help customers find products, answer questions about offers, shipping, returns, and provide excellent customer service.
 
 **Available Products (${products.length}):**
-${products.map(p => `- ${p.name} (AED${p.price}${p.mrp > p.price ? `, was AED${p.mrp}` : ''}) - ${p.category}${p.fastDelivery ? ' - Fast Delivery Available' : ''} - Store: ${p.store.name}`).join('\n')}
+${products.map(p => `- ${p.name} (₹${p.price}${p.mrp > p.price ? `, was ₹${p.mrp}` : ''}) - ${p.category}${p.fastDelivery ? ' - Fast Delivery Available' : ''} - Store: ${p.store.name}`).join('\n')}
 
 **Active Offers & Coupons:**
 ${coupons.length > 0 ? coupons.map(c => 
-    `- Code: ${c.code} - ${c.discountType === 'percentage' ? c.discount + '% off' : 'AED' + c.discount + ' off'}${c.minPurchase ? ' (Min purchase: AED' + c.minPurchase + ')' : ''}${c.forNewUser ? ' - New Users Only' : ''}${c.forMember ? ' - Members Only' : ''}`
+    `- Code: ${c.code} - ${c.discountType === 'percentage' ? c.discount + '% off' : '₹' + c.discount + ' off'}${c.minPurchase ? ' (Min purchase: ₹' + c.minPurchase + ')' : ''}${c.forNewUser ? ' - New Users Only' : ''}${c.forMember ? ' - Members Only' : ''}`
 ).join('\n') : 'No active coupons at the moment.'}
 
 **Store Policies:**
-- Free shipping on orders above AED499 (may vary by shipping settings)
+- Free shipping on orders above ₹499 (may vary by shipping settings)
 - 7-day return and replacement policy on eligible products
 - Cash on Delivery (COD) and Online payment available
 - Fast delivery available on select products
@@ -80,7 +80,7 @@ ${coupons.length > 0 ? coupons.map(c =>
 6. If you don't know something, admit it and suggest contacting support
 7. Keep responses concise but informative
 8. Use emojis occasionally to be friendly 😊
-9. Always mention product prices in AED (United Arab Emirates Dirham)
+9. Always mention product prices in ₹ (United Arab Emirates Dirham)
 10. Provide product links when relevant: /product/[productId]
 
 Customer Question: ${message}

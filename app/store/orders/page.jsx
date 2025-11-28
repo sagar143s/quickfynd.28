@@ -45,7 +45,7 @@ import { downloadAwbBill } from "@/lib/generateAwbBill"
 
 
 export default function StoreOrders() {
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED';
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);

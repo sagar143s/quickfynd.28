@@ -26,7 +26,7 @@ Your invoice now includes:
 
 ### 5. **Totals Section (Gray Box)**
 - Subtotal
-- Shipping (AED5)
+- Shipping (₹5)
 - Discount (if coupon applied - shown in green)
 - Grand Total (Blue box with white text)
 
@@ -124,7 +124,7 @@ doc.text('Authorized Signature', 165, 285, { align: 'center' });
 // At the top of generateInvoice function, after creating doc:
 export const generateInvoice = (order) => {
     const doc = new jsPDF();
-    const currency = 'AED';
+    const currency = '₹';
     
     // Company Header with Logo
     doc.setFillColor(37, 99, 235);

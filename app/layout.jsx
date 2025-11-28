@@ -8,8 +8,8 @@ import MetaPixel from "@/components/MetaPixel";
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata = {
-  title: "Qui - Shop smarter",
-  description: "qui - Shop smarter",
+  title: "Quickfynd - Shop smarter",
+  description: "Discover trending gadgets, fashion, home essentials & more at the best price. Fast delivery, secure checkout, and deals you don’t want to miss.",
 };
 
 export default function RootLayout({ children }) {

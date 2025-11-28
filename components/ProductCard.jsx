@@ -11,7 +11,7 @@ import { uploadCart } from '@/lib/features/cart/cartSlice'
 import toast from 'react-hot-toast'
 
 const ProductCard = ({ product }) => {
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED'
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹'
     const dispatch = useDispatch()
     const { getToken } = useAuth()
     const cartItems = useSelector(state => state.cart.cartItems)
@@ -37,6 +37,7 @@ const ProductCard = ({ product }) => {
     // Limit product name to 50 characters
     const displayName = product.name.length > 50 ? product.name.slice(0, 50) + '…' : product.name;
 
+    const showPrice = Number(product.price) > 0 || Number(product.mrp) > 0;
     return (
         <Link href={`/product/${product.slug}`} className='group w-full relative'>
             <div className='bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col relative h-full min-h-[160px] md:min-h-[200px]'>
@@ -97,13 +98,17 @@ const ProductCard = ({ product }) => {
                             <span className='text-xs text-gray-400 ml-1'>No reviews</span>
                         )}
                     </div>
-                    {/* Price */}
-                    <div className='flex items-center gap-2 mt-1'>
-                        <p className='text-base md:text-xl font-extrabold text-gray-900'>{currency}{product.price}</p>
-                        {product.mrp && product.mrp > product.price && (
-                            <p className='text-xs md:text-sm text-gray-500 line-through'>{currency}{product.mrp}</p>
-                        )}
-                    </div>
+                                {/* Price */}
+                                {showPrice && (
+                                    <div className='flex items-center gap-2 mt-1'>
+                                        {Number(product.price) > 0 && (
+                                            <p className='text-base md:text-xl font-extrabold text-gray-900'>{currency}{product.price}</p>
+                                        )}
+                                        {Number(product.mrp) > 0 && Number(product.mrp) > Number(product.price) && Number(product.price) > 0 && (
+                                            <p className='text-xs md:text-sm text-gray-500 line-through'>{currency}{product.mrp}</p>
+                                        )}
+                                    </div>
+                                )}
                 </div>
                 {/* Cart Button with Badge - Bottom Right */}
                 <button 

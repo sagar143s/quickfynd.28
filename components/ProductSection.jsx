@@ -47,17 +47,26 @@ export default function ProductSection({ title, products, viewAllLink }) {
                             <h3 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-orange-600 transition">
                                 {product.name}
                             </h3>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-gray-900">AED {product.price}</span>
-                                {product.mrp > product.price && (
-                                    <span className="text-xs text-gray-500 line-through">AED {product.mrp}</span>
-                                )}
-                            </div>
-                            {product.mrp > product.price && (
-                                <span className="text-xs text-green-600 font-medium">
-                                    {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off
-                                </span>
-                            )}
+                                                        {/* Show price row only if at least one price is > 0 */}
+                                                        {(Number(product.price) > 0 || Number(product.mrp) > 0) && (
+                                                            <div className="flex items-center gap-2">
+                                                                {/* Show sale price if > 0 */}
+                                                                {Number(product.price) > 0 && (
+                                                                    <span className="text-sm font-bold text-gray-900">₹ {product.price}</span>
+                                                                )}
+                                                                {/* Show regular price only if > 0, greater than price, and price > 0 */}
+                                                                {Number(product.mrp) > 0 && Number(product.mrp) > Number(product.price) && Number(product.price) > 0 && (
+                                                                    <span className="text-xs text-gray-500 line-through">₹ {product.mrp}</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {/* Remove any trailing '0' if MRP is not valid */}
+                                                        {/* Show discount only if mrp > 0 and greater than price and price > 0 */}
+                                                        {Number(product.mrp) > 0 && Number(product.mrp) > Number(product.price) && Number(product.price) > 0 && (
+                                                            <span className="text-xs text-green-600 font-medium">
+                                                                {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off
+                                                            </span>
+                                                        )}
                         </div>
                         {!product.slug && (
                             <div className="text-xs text-red-500 mt-2">No slug set for this product</div>

@@ -28,7 +28,7 @@ const AdminNavbar = () => {
             <Link href="/admin" className="relative text-4xl font-semibold text-slate-700">
                 <Image
                     src={Logo}
-                    alt="Qui Logo"
+                    alt="Quickfynd Logo"
                     width={180}
                     height={48}
                     className="object-contain"

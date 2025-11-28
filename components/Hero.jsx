@@ -30,7 +30,7 @@ function isValidImage(src) {
 }
 
 const Hero = () => {
-  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED'
+  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹'
 
   // === Default Slides ===
   const slides = [
@@ -221,13 +221,10 @@ const Hero = () => {
   return (
     <div className="mx-0 sm:mx-6">
       <div className="flex max-xl:flex-col gap-6 max-w-7xl mx-auto mt-0 sm:mt-8 mb-6 sm:mb-10">
-
-        {/* -------------------------------
-            MAIN ROTATING HERO IMAGE
-        --------------------------------*/}
+        {/* MAIN HERO BANNER - Responsive, image only, no border */}
         <Link
           href={buttonHref}
-          className="relative flex-1 rounded-none sm:rounded-3xl min-h-[220px] sm:min-h-[280px] md:min-h-[320px] lg:min-h-[380px] xl:min-h-100 overflow-hidden block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300"
+          className="relative flex-1 rounded-none sm:rounded-3xl min-h-[180px] xs:min-h-[220px] sm:min-h-[280px] md:min-h-[320px] lg:min-h-[380px] xl:min-h-100 overflow-hidden block"
         >
           <Image
             src={
@@ -238,18 +235,13 @@ const Hero = () => {
             alt="Hero Banner"
             fill
             priority
-            sizes="(min-width: 1024px) 66vw, 100vw"
-            className={`transition-opacity duration-700 ${
-              fade ? 'opacity-100' : 'opacity-0'
-            } object-cover`}
+            sizes="(max-width: 640px) 100vw, (min-width: 1024px) 66vw, 100vw"
+            className={`transition-opacity duration-700 ${fade ? 'opacity-100' : 'opacity-0'} object-cover`}
+            style={{objectPosition: 'center'}}
           />
         </Link>
-
-        {/* -------------------------------
-            RIGHT SIDE BANNERS (DESKTOP)
-        --------------------------------*/}
+        {/* RIGHT SIDE BANNERS: Hide on mobile */}
         <div className="hidden lg:flex flex-col gap-5 w-full xl:max-w-sm text-sm text-slate-600">
-
           {/* BOX 1 */}
           <Link
             href={right1Sel?.bannerCtaLink || `/products?category=${encodeURIComponent(right1Sel?.title || '')}`}
@@ -268,7 +260,6 @@ const Hero = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/5 to-transparent" />
           </Link>
-
           {/* BOX 2 */}
           <Link
             href={right2Sel?.bannerCtaLink || `/products?category=${encodeURIComponent(right2Sel?.title || '')}`}
@@ -289,7 +280,6 @@ const Hero = () => {
           </Link>
         </div>
       </div>
-
       {/* CATEGORIES SECTION (disabled) */}
       <div className="hidden sm:block">
         {/* <CategoriesMarquee /> */}

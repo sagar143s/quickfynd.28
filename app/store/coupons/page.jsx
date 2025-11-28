@@ -15,7 +15,7 @@ export default function StoreCouponsPage() {
     const [editingCoupon, setEditingCoupon] = useState(null)
     const [submitting, setSubmitting] = useState(false)
     
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED'
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹'
 
     const [formData, setFormData] = useState({
         code: '',

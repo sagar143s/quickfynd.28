@@ -12,7 +12,7 @@ import Counter from "./Counter";
 import MobileProductActions from "./MobileProductActions";
 
 const ProductDetails = ({ product }) => {
-  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED ';
+  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹ ';
   const [mainImage, setMainImage] = useState(product.images?.[0]);
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -351,13 +351,13 @@ const ProductDetails = ({ product }) => {
         {/* <div className="space-y-2 mb-4 text-sm">
           <div className="flex items-center gap-2">
             <span className="text-gray-700">Or divide it into 4 monthly payments of</span>
-            <span className="font-semibold">AED{(product.price / 4).toFixed(2)}</span>
+            <span className="font-semibold">₹{(product.price / 4).toFixed(2)}</span>
             <span className="text-gray-500">only with</span>
             <span className="bg-teal-400 text-white px-2 py-0.5 rounded font-semibold text-xs">tabby</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-gray-700">Or divide it into 3 monthly payments of</span>
-            <span className="font-semibold">AED{(product.price / 3).toFixed(2)}</span>
+            <span className="font-semibold">₹{(product.price / 3).toFixed(2)}</span>
             <span className="text-gray-500">only with</span>
             <span className="bg-orange-500 text-white px-2 py-0.5 rounded font-semibold text-xs">tamara</span>
           </div>

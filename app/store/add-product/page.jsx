@@ -393,16 +393,16 @@ export default function ProductForm({ product = null, onClose, onSubmitSuccess }
                 {/* Pricing */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1">Regular Price (MRP) - AED</label>
+                        <label className="block text-sm font-medium mb-1">Regular Price (MRP) - ₹</label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">AED</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₹</span>
                             <input type="number" step="0.01" name="mrp" value={productInfo.mrp} onChange={onChangeHandler} className="w-full border rounded px-3 py-2 pl-14" placeholder="0.00" />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1">Sale Price - AED</label>
+                        <label className="block text-sm font-medium mb-1">Sale Price - ₹</label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">AED</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₹</span>
                             <input type="number" step="0.01" name="price" value={productInfo.price} onChange={onChangeHandler} className="w-full border rounded px-3 py-2 pl-14" placeholder="0.00" />
                         </div>
                     </div>
@@ -590,8 +590,8 @@ export default function ProductForm({ product = null, onClose, onSubmitSuccess }
                             <div className="grid grid-cols-7 gap-2 font-medium text-sm text-gray-700">
                                 <div>Label</div>
                                 <div>Qty</div>
-                                <div>Price (AED)</div>
-                                <div>MRP (AED)</div>
+                                <div>Price (₹)</div>
+                                <div>MRP (₹)</div>
                                 <div>Stock</div>
                                 <div>Tag</div>
                                 <div></div>
@@ -605,9 +605,9 @@ export default function ProductForm({ product = null, onClose, onSubmitSuccess }
                                             onChange={(e)=>{
                                                 const v=[...bulkOptions]; v[idx] = { ...b, qty: Number(e.target.value) }; setBulkOptions(v)
                                             }} />
-                                        <input className="border rounded px-2 py-1" type="number" step="0.01" placeholder="AED" value={b.price}
+                                        <input className="border rounded px-2 py-1" type="number" step="0.01" placeholder="₹" value={b.price}
                                             onChange={(e)=>{ const v=[...bulkOptions]; v[idx] = { ...b, price: e.target.value }; setBulkOptions(v)}} />
-                                        <input className="border rounded px-2 py-1" type="number" step="0.01" placeholder="AED" value={b.mrp}
+                                        <input className="border rounded px-2 py-1" type="number" step="0.01" placeholder="₹" value={b.mrp}
                                             onChange={(e)=>{ const v=[...bulkOptions]; v[idx] = { ...b, mrp: e.target.value }; setBulkOptions(v)}} />
                                         <input className="border rounded px-2 py-1" type="number" placeholder="Stock" value={b.stock}
                                             onChange={(e)=>{ const v=[...bulkOptions]; v[idx] = { ...b, stock: Number(e.target.value) }; setBulkOptions(v)}} />
@@ -703,7 +703,7 @@ export default function ProductForm({ product = null, onClose, onSubmitSuccess }
                                         {/* Pricing */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Price (AED)</label>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Price (₹)</label>
                                                 <input className="w-full border rounded px-3 py-2" placeholder="0.00" type="number" step="0.01"
                                                     value={v.price ?? ''}
                                                     onChange={(e)=>{
@@ -711,7 +711,7 @@ export default function ProductForm({ product = null, onClose, onSubmitSuccess }
                                                     }} />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">MRP (AED)</label>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">MRP (₹)</label>
                                                 <input className="w-full border rounded px-3 py-2" placeholder="0.00" type="number" step="0.01"
                                                     value={v.mrp ?? ''}
                                                     onChange={(e)=>{

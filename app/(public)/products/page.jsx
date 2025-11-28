@@ -243,7 +243,7 @@ function ProductsContent() {
                                         className="w-full"
                                     />
                                     <p className="text-xs text-gray-600">
-                                        AED {filters.priceRange[0].toLocaleString()} - AED {filters.priceRange[1].toLocaleString()}
+                                        ₹ {filters.priceRange[0].toLocaleString()} - ₹ {filters.priceRange[1].toLocaleString()}
                                     </p>
                                 </div>
                             </div>
