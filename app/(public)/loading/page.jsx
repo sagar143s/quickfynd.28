@@ -4,7 +4,9 @@ import Loading from "@/components/Loading"
 import { clearCart, fetchCart } from "@/lib/features/cart/cartSlice"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+
 import { useDispatch } from "react-redux"
+import { useAuth } from "@/lib/useAuth"
 
 
 export default function LoadingPage() {
