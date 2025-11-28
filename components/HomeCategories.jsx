@@ -1,14 +1,14 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Mobile from '../assets/HOME/homecatgeory/mobile.webp'
-import Computer from '../assets/HOME/homecatgeory/computer.webp'
-import Fashion from '../assets/HOME/homecatgeory/fashion.webp'
-import Grocerry from '../assets/HOME/homecatgeory/grocerry.webp'
-import Food from '../assets/HOME/homecatgeory/Food.webp'
-import Flight from '../assets/HOME/homecatgeory/flight.webp'
-import Tv from '../assets/HOME/homecatgeory/tv.jpg'
-import Furniture from '../assets/HOME/homecatgeory/furniture.avif'
+import Mobile from '../assets/HOME/homecategory/mobile.webp'
+import Computer from '../assets/HOME/homecategory/computer.webp'
+import Fashion from '../assets/HOME/homecategory/fashion.webp'
+import Grocerry from '../assets/HOME/homecategory/grocerry.webp'
+import Food from '../assets/HOME/homecategory/food.webp'
+import Flight from '../assets/HOME/homecategory/flight.webp'
+import Tv from '../assets/HOME/homecategory/tv.jpg'
+import Furniture from '../assets/HOME/homecategory/furniture.avif'
 // badge: "NEW"
 const categories = [
   { label: "Fast Delivery", img: Mobile,  },
