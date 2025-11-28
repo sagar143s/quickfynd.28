@@ -11,7 +11,7 @@ export async function POST(request) {
             return NextResponse.json({ error: "Not authorized" }, { status: 401 });
         }
 
-        // Get user details from Clerk
+    
         const user = await request.json();
         const { email, phone } = user;
 

@@ -197,6 +197,7 @@ export default function CheckoutPage() {
           addressId: addressId || (addressList[0] && addressList[0].id),
           items: cartArray.map(({ id, quantity }) => ({ id, quantity })),
           paymentMethod: form.payment === 'cod' ? 'COD' : form.payment.toUpperCase(),
+          shippingFee: shipping,
         };
       } else {
         payload = {
@@ -212,6 +213,7 @@ export default function CheckoutPage() {
           },
           items: cartArray.map(({ id, quantity }) => ({ id, quantity })),
           paymentMethod: form.payment === 'cod' ? 'COD' : form.payment.toUpperCase(),
+          shippingFee: shipping,
         };
       }
       let fetchOptions = {

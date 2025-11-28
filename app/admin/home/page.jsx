@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { useAuth, useUser } from '@clerk/nextjs'
+// import your current auth hook here
 import axios from 'axios'
 import Loading from '@/components/Loading'
 import { toast } from 'react-hot-toast'
@@ -13,8 +13,9 @@ const SECTION_OPTIONS = [
 ]
 
 export default function AdminHomeSelectionPage() {
-  const { getToken } = useAuth()
-  const { user } = useUser()
+  // TODO: Replace with your current auth logic
+  const getToken = async () => '' // Replace with real getToken
+  const user = null // Replace with real user object
 
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState([])

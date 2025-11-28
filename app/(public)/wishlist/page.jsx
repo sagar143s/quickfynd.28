@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
-// TODO: Import your Firebase Auth hooks/utilities here
+import { useAuth } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
@@ -11,16 +11,10 @@ import PageTitle from "@/components/PageTitle";
 import Loading from "@/components/Loading";
 
 
-const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function WishlistAuthed() {
-    // TODO: Replace with your Firebase Auth state
-    // Example: const user = firebase.auth().currentUser;
-    // Example: const isSignedIn = !!user;
-    // Example: const userId = user?.uid;
-    const user = null; // TODO: Replace with actual user object
-    const isSignedIn = false; // TODO: Replace with actual sign-in state
-    const userId = null; // TODO: Replace with actual user id
+    const { user, isSignedIn } = useAuth();
+    const userId = user?.uid;
     const router = useRouter();
     const dispatch = useDispatch();
     const [wishlist, setWishlist] = useState([]);
@@ -69,7 +63,6 @@ function WishlistAuthed() {
             product,
             userId,
             user: {
-                // TODO: Update these fields to match your Firebase user object
                 name: user?.displayName,
                 email: user?.email,
                 image: user?.photoURL
@@ -355,6 +348,5 @@ function WishlistAuthed() {
 }
 
 export default function WishlistPage() {
-    // TODO: Remove Clerk config check and use Firebase Auth state if needed
-    return <WishlistAuthed />
+    return <WishlistAuthed />;
 }

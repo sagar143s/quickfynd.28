@@ -78,8 +78,8 @@ function OrderSuccessContent() {
   // Calculate totals
   const products = order ? order.orderItems : [];
   const subtotal = products.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  // Force display of Shipping & handling as 0 (site-wide free shipping)
-  const shipping = 0;
+  // Use shippingFee from order if available
+  const shipping = typeof order?.shippingFee === 'number' ? order.shippingFee : 0;
   const discount = order?.coupon?.discount ? (order.coupon.discountType === 'percentage' ? (order.coupon.discount / 100 * subtotal) : Math.min(order.coupon.discount, subtotal)) : 0;
   const total = subtotal + shipping - discount;
   const orderDate = order?.createdAt ? new Date(order.createdAt).toLocaleDateString() : new Date().toLocaleDateString();

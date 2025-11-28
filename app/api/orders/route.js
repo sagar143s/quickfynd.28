@@ -97,8 +97,8 @@ export async function POST(request) {
             grandSubtotal += Number(product.price) * Number(item.quantity);
         }
 
-        // Shipping (always free)
-        let shippingFee = 0;
+        // Shipping: use from payload, fallback to 0
+        let shippingFee = typeof body.shippingFee === 'number' ? body.shippingFee : 0;
         let isShippingFeeAdded = false;
 
         // Order creation
@@ -156,6 +156,7 @@ export async function POST(request) {
             const orderData = {
                 store: { connect: { id: storeId } },
                 total: parseFloat(total.toFixed(2)),
+                shippingFee: shippingFee,
                 paymentMethod,
                 isCouponUsed: !!coupon,
                 coupon: coupon || {},
