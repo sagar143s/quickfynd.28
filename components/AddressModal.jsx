@@ -1,5 +1,5 @@
 'use client'
-import { addAddress } from "@/lib/features/address/addressSlice"
+import { addAddress, fetchAddress } from "@/lib/features/address/addressSlice"
 
 import axios from "axios"
 import { XIcon } from "lucide-react"
@@ -7,9 +7,17 @@ import { useState } from "react"
 import { toast } from "react-hot-toast"
 import { useDispatch } from "react-redux"
 
-const AddressModal = ({ setShowAddressModal }) => {
+import { useAuth } from '@/lib/useAuth';
 
-     const { getToken } = useAuth()
+const indianStates = [
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Jammu and Kashmir", "Ladakh" 
+];
+const keralaDistricts = [
+    "Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode", "Malappuram", "Palakkad", "Pathanamthitta", "Thiruvananthapuram", "Thrissur", "Wayanad"
+];
+
+const AddressModal = ({ open, setShowAddressModal, onAddressAdded }) => {
+    const { getToken } = useAuth()
      const dispatch = useDispatch()
 
     const [address, setAddress] = useState({
@@ -18,22 +26,23 @@ const AddressModal = ({ setShowAddressModal }) => {
         street: '',
         city: '',
         state: '',
+        district: '',
         zip: '',
-        country: 'United Arab Emirates',
+        country: 'India',
         phone: '',
-        phoneCode: '+971'
+        phoneCode: '+91'
     })
 
     const countries = [
+        { name: 'India', code: '+91' },
         { name: 'United Arab Emirates', code: '+971' },
         { name: 'Saudi Arabia', code: '+966' },
         { name: 'Qatar', code: '+974' },
         { name: 'Kuwait', code: '+965' },
         { name: 'Bahrain', code: '+973' },
         { name: 'Oman', code: '+968' },
-        { name: 'India', code: '+91' },
         { name: 'Pakistan', code: '+92' },
-    ]
+    ];
 
     const handleAddressChange = (e) => {
         const { name, value } = e.target
@@ -56,27 +65,58 @@ const AddressModal = ({ setShowAddressModal }) => {
         e.preventDefault()
         try {
             const token = await getToken()
-            
+            // Extract userId from token
+            let userId = null;
+            try {
+                const decoded = JSON.parse(atob(token.split('.')[1]));
+                userId = decoded.user_id || decoded.uid || decoded.sub;
+            } catch {}
+            if (!userId) {
+                toast.error('User not authenticated. Please sign in again.');
+                return;
+            }
             // Prepare address data, removing optional/default fields
-            const addressData = { ...address }
+            const addressData = { ...address, userId };
             if (!addressData.zip || addressData.zip.trim() === '') {
                 delete addressData.zip
             }
             // Remove phoneCode as it has a default value in the database
             delete addressData.phoneCode
-            
+            // Remove district if not present or empty (to match Prisma schema)
+            if (!addressData.district) {
+                delete addressData.district;
+            }
             const { data } = await axios.post('/api/address', {address: addressData}, {headers: { Authorization: `Bearer ${token}` } })
             dispatch(addAddress(data.newAddress))
+            // Immediately refresh address list in Redux after adding
+            dispatch(fetchAddress({ getToken }))
             toast.success(data.message)
+            if (onAddressAdded) {
+                onAddressAdded(data.newAddress);
+            }
             setShowAddressModal(false)
+            // Reset form state after save
+            setAddress({
+                name: '',
+                email: '',
+                street: '',
+                city: '',
+                state: '',
+                district: '',
+                zip: '',
+                country: 'India',
+                phone: '',
+                phoneCode: '+91'
+            })
         } catch (error) {
             console.log(error)
             toast.error(error?.response?.data?.error || error?.response?.data?.message || error.message)
         }
     }
 
+    if (!open) return null;
     return (
-        <form onSubmit={e => toast.promise(handleSubmit(e), { loading: 'Adding Address...' })} className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm h-screen flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm h-screen flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">Add New <span className="text-blue-600">Address</span></h2>
@@ -84,8 +124,7 @@ const AddressModal = ({ setShowAddressModal }) => {
                         <XIcon size={24} />
                     </button>
                 </div>
-
-                <div className="space-y-4">
+                <form onSubmit={e => toast.promise(handleSubmit(e), { loading: 'Adding Address...' })} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
                         <input 
@@ -139,18 +178,38 @@ const AddressModal = ({ setShowAddressModal }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">State/Emirate</label>
-                            <input 
-                                name="state" 
-                                onChange={handleAddressChange} 
-                                value={address.state} 
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" 
-                                type="text" 
-                                placeholder="State" 
-                                required 
-                            />
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">State</label>
+                            <select
+                                name="state"
+                                onChange={handleAddressChange}
+                                value={address.state}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
+                                required
+                            >
+                                <option value="">Select State</option>
+                                {indianStates.map((state) => (
+                                    <option key={state} value={state}>{state}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
+                    {address.state === "Kerala" && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">District</label>
+                            <select
+                                name="district"
+                                onChange={handleAddressChange}
+                                value={address.district}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
+                                required
+                            >
+                                <option value="">Select District</option>
+                                {keralaDistricts.map((district) => (
+                                    <option key={district} value={district}>{district}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Zip/Postal Code (Optional)</label>
@@ -184,9 +243,17 @@ const AddressModal = ({ setShowAddressModal }) => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
                         <div className="flex gap-2">
-                            <div className="flex items-center px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-medium min-w-[80px]">
-                                {address.phoneCode}
-                            </div>
+                            <select
+                                name="phoneCode"
+                                onChange={handleAddressChange}
+                                value={address.phoneCode}
+                                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-medium min-w-[80px]"
+                                required
+                            >
+                                {countries.map((country) => (
+                                    <option key={country.code} value={country.code}>{country.code}</option>
+                                ))}
+                            </select>
                             <input 
                                 name="phone" 
                                 onChange={handleAddressChange} 
@@ -208,9 +275,9 @@ const AddressModal = ({ setShowAddressModal }) => {
                     >
                         SAVE ADDRESS
                     </button>
-                </div>
+                </form>
             </div>
-        </form>
+        </div>
     )
 }
 

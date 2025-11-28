@@ -103,7 +103,7 @@ export default function Home() {
                                                 products={section.productIds.slice(0, 4).map(pid => products.find(p => p.id === pid)).filter(Boolean)}
                                                 viewAllPath={section.path || '#'}
                                             />
-                                        ) : nullyes 
+                                        ) : null 
 
                                     ))}
                                 </div>

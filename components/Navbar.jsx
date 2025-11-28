@@ -28,7 +28,7 @@ const Navbar = () => {
   const [wishlistCount, setWishlistCount] = useState(0);
   const cartCount = useSelector((state) => state.cart.total);
   const [signInOpen, setSignInOpen] = useState(false);
-  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [firebaseUser, setFirebaseUser] = useState(undefined);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -290,7 +290,6 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 bg-black/60 z-50" onClick={() => setMobileMenuOpen(false)}>
             <div className="absolute top-0 right-0 w-3/4 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              
               {/* Close Button */}
               <div className="flex justify-between items-center border-b border-gray-200 pb-4">
                 <h3 className="text-lg font-bold text-gray-900"></h3>
@@ -300,16 +299,22 @@ const Navbar = () => {
               </div>
 
               {/* User Section */}
-              <button
-                type="button"
-                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition mb-4"
-                onClick={() => {
-                  setSignInOpen(true);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                Login
-              </button>
+              {firebaseUser === undefined ? null : !firebaseUser ? (
+                <button
+                  type="button"
+                  className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition mb-4"
+                  onClick={() => {
+                    setSignInOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Login
+                </button>
+              ) : (
+                <div className="w-full px-4 py-3 bg-blue-50 text-blue-700 text-sm font-semibold rounded-full mb-4 flex items-center gap-2">
+                  <span className="font-medium">Hi, {firebaseUser.displayName || firebaseUser.email}</span>
+                </div>
+              )}
 
               {/* Links */}
               <div className="flex flex-col gap-1">
@@ -422,7 +427,7 @@ const Navbar = () => {
 
 
       {/* Sign In Modal (always at Navbar root) */}
-      <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
+      {!firebaseUser && <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />}
     </div>
   </nav>
   );

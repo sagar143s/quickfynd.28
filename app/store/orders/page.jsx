@@ -1,4 +1,32 @@
 "use client";
+
+// Helper to get short order number (same as order success page)
+function getOrderNumber(id) {
+    if (!id) return '';
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+        hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    }
+    const num = (hash % 900000) + 100000;
+    return String(num);
+}
+
+// Update order status
+const updateOrderStatus = async (orderId, newStatus, getToken, fetchOrders) => {
+    try {
+        const token = await getToken();
+        await axios.post('/api/store/orders/update-status', {
+            orderId,
+            status: newStatus
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Order status updated!');
+        fetchOrders();
+    } catch (error) {
+        toast.error(error?.response?.data?.error || 'Failed to update status');
+    }
+};
 import { useAuth } from '@/lib/useAuth';
 export const dynamic = 'force-dynamic'
 import { useEffect, useState } from "react"
@@ -28,7 +56,15 @@ export default function StoreOrders() {
         courier: ''
     });
 
-    const { getToken } = useAuth();
+    const { user, getToken, loading: authLoading } = useAuth();
+
+    // Only allow sellers (example: email ends with @gmail.com or is in allowlist)
+    const isSeller = user && user.email && (
+            user.email.endsWith('@gmail.com') || user.email === 'rohithsagarm@gmail.com' // add more seller emails as needed
+        );
+        if (!authLoading && !isSeller) {
+            return <div className="min-h-[60vh] flex items-center justify-center text-lg text-red-600">Access denied. Seller access only.</div>;
+        }
 
     // Function to update tracking details and notify customer
     const updateTrackingDetails = async () => {
@@ -63,11 +99,14 @@ export default function StoreOrders() {
     const fetchOrders = async () => {
         try {
             const token = await getToken();
+            if (!token) {
+                toast.error("Invalid session. Please sign in again.");
+                setLoading(false);
+                return;
+            }
             const { data } = await axios.get('/api/store/orders', {headers: { Authorization: `Bearer ${token}` }});
-            console.log('[FRONTEND ORDERS API RESPONSE]', data);
             setOrders(data.orders);
         } catch (error) {
-            console.error('[FRONTEND ORDERS API ERROR]', error);
             toast.error(error?.response?.data?.error || error.message);
         } finally {
             setLoading(false);
@@ -75,8 +114,15 @@ export default function StoreOrders() {
     };
 
     useEffect(() => {
+        if (authLoading) return; // Wait for auth to load
+        if (!user) {
+            toast.error("You must be signed in as a seller to view orders.");
+            setLoading(false);
+            return;
+        }
         fetchOrders();
-    }, []);
+        // eslint-disable-next-line
+    }, [authLoading, user]);
 
     if (loading) return <Loading />;
 
@@ -90,11 +136,14 @@ export default function StoreOrders() {
                     <table className="w-full text-sm text-left text-gray-600">
                         <thead className="bg-gray-50 text-gray-700 text-xs uppercase tracking-wider">
                             <tr>
-                                {[
-                                    "Sr. No.", "Customer", "Total", "Payment", "Coupon", "Status", "Date"
-                                ].map((heading, i) => (
-                                    <th key={i} className="px-4 py-3">{heading}</th>
-                                ))}
+                                <th className="px-4 py-3">Sr. No.</th>
+                                <th className="px-4 py-3">Order No.</th>
+                                <th className="px-4 py-3">Customer</th>
+                                <th className="px-4 py-3">Total</th>
+                                <th className="px-4 py-3">Payment</th>
+                                <th className="px-4 py-3">Coupon</th>
+                                <th className="px-4 py-3">Status</th>
+                                <th className="px-4 py-3">Date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -104,9 +153,8 @@ export default function StoreOrders() {
                                     className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                                     onClick={() => openModal(order)}
                                 >
-                                    <td className="pl-6 text-green-600" >
-                                        {index + 1}
-                                    </td>
+                                    <td className="pl-6 text-green-600">{index + 1}</td>
+                                    <td className="px-4 py-3 font-mono text-xs text-slate-700">{getOrderNumber(order.id)}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex flex-col gap-1">
                                             <span>{order.isGuest ? order.guestName : order.user?.name}</span>
@@ -128,10 +176,10 @@ export default function StoreOrders() {
                                             "—"
                                         )}
                                     </td>
-                                    <td className="px-4 py-3" onClick={(e) => { e.stopPropagation() }}>
+                                    <td className="px-4 py-3" onClick={e => { e.stopPropagation(); }}>
                                         <select
                                             value={order.status}
-                                            onChange={e => updateOrderStatus(order.id, e.target.value)}
+                                            onChange={e => updateOrderStatus(order.id, e.target.value, getToken, fetchOrders)}
                                             className="border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-200"
                                         >
                                             <option value="ORDER_PLACED">ORDER_PLACED</option>
@@ -140,17 +188,13 @@ export default function StoreOrders() {
                                             <option value="DELIVERED">DELIVERED</option>
                                         </select>
                                     </td>
-                                    <td className="px-4 py-3 text-gray-500">
-                                        {new Date(order.createdAt).toLocaleString()}
-                                    </td>
+                                    <td className="px-4 py-3 text-gray-500">{new Date(order.createdAt).toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             )}
-
-            {/* Modal */}
             {isModalOpen && selectedOrder && (
                 <div onClick={closeModal} className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm text-slate-700 text-sm z-50 p-4" >
                     <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -159,7 +203,7 @@ export default function StoreOrders() {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h2 className="text-2xl font-bold mb-1">Order Details</h2>
-                                    <p className="text-blue-100 text-xs">Order ID: {selectedOrder.id.slice(0, 8).toUpperCase()}</p>
+                                    <p className="text-blue-100 text-xs">Order ID: {selectedOrder.id.slice(0, 8).toUpperCase()} &nbsp;|&nbsp; Order No: <span className='font-mono text-white'>{getOrderNumber(selectedOrder.id)}</span></p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
@@ -298,29 +342,46 @@ export default function StoreOrders() {
                                     <div>
                                         <p className="text-slate-500">Name</p>
                                         <p className="font-medium text-slate-900">
-                                            {selectedOrder.isGuest ? selectedOrder.guestName : selectedOrder.user?.name}
+                                            {selectedOrder.isGuest ? (selectedOrder.guestName || '—') : (selectedOrder.user?.name || '—')}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-slate-500">Email</p>
                                         <p className="font-medium text-slate-900">
-                                            {selectedOrder.isGuest ? selectedOrder.guestEmail : selectedOrder.user?.email}
+                                            {selectedOrder.isGuest ? (selectedOrder.guestEmail || '—') : (selectedOrder.user?.email || '—')}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-slate-500">Phone</p>
                                         <p className="font-medium text-slate-900">
-                                            {selectedOrder.isGuest ? selectedOrder.guestPhone : selectedOrder.address?.phone}
+                                            {selectedOrder.isGuest ? (selectedOrder.guestPhone || '—') : (selectedOrder.address?.phone || '—')}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-slate-500">Address</p>
-                                        <p className="font-medium text-slate-900">
-                                            {selectedOrder.isGuest
-                                                ? `${selectedOrder.address?.street || ''}${selectedOrder.address?.street ? ', ' : ''}${[selectedOrder.address?.city, selectedOrder.address?.state, selectedOrder.address?.zip, selectedOrder.address?.country].filter(Boolean).join(', ')}`
-                                                : `${selectedOrder.address?.street}, ${selectedOrder.address?.city}, ${selectedOrder.address?.state}, ${selectedOrder.address?.zip}, ${selectedOrder.address?.country}`
-                                            }
-                                        </p>
+                                        <p className="text-slate-500">Street</p>
+                                        <p className="font-medium text-slate-900">{selectedOrder.address?.street || '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">City</p>
+                                        <p className="font-medium text-slate-900">{selectedOrder.address?.city || '—'}</p>
+                                    </div>
+                                    {selectedOrder.address?.district && selectedOrder.address.district.trim() !== '' && (
+                                        <div>
+                                            <p className="text-slate-500">District</p>
+                                            <p className="font-medium text-slate-900">{selectedOrder.address.district}</p>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-slate-500">State</p>
+                                        <p className="font-medium text-slate-900">{selectedOrder.address?.state || '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Pincode</p>
+                                        <p className="font-medium text-slate-900">{selectedOrder.address?.zip || selectedOrder.address?.pincode || '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Country</p>
+                                        <p className="font-medium text-slate-900">{selectedOrder.address?.country || '—'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -417,5 +478,5 @@ export default function StoreOrders() {
                 </div>
             )}
         </>
-    )
+    );
 }

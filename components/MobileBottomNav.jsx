@@ -1,23 +1,19 @@
 
 'use client'
 import React from 'react'
-
 import { Home, Search, ShoppingCart, User, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSelector } from 'react-redux'
-// TODO: Import your Firebase Auth hooks/utilities here
-
+import { useAuth } from '@/lib/useAuth'
 
 export default function MobileBottomNav() {
   const [hydrated, setHydrated] = React.useState(false)
-  React.useEffect(() => { setHydrated(true) }, [])
+  React.useEffect(() => { setHydrated(true) }, []);
   const pathname = usePathname()
   const cartCount = useSelector((state) => state.cart.total)
-  // TODO: Replace with your Firebase Auth state
-  // Example: const user = firebase.auth().currentUser;
-  // Example: const isSignedIn = !!user;
-  const isSignedIn = false; // TODO: Replace with actual sign-in state
+  const { user, loading: authLoading } = useAuth();
+  const isSignedIn = !!user;
 
   // Don't show on product pages (will have separate fixed bar)
   if (pathname?.includes('/product/')) {

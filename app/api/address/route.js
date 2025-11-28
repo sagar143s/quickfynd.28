@@ -19,6 +19,23 @@ export async function POST(request){
         }
         const userId = decodedToken.uid;
 
+        // Ensure user exists in User table, create if missing
+        let user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            // Try to get user info from token, fallback to placeholders
+            const name = decodedToken.name || "User";
+            const email = decodedToken.email || `${userId}@noemail.com`;
+            const image = decodedToken.picture || "";
+            user = await prisma.user.create({
+                data: {
+                    id: userId,
+                    name,
+                    email,
+                    image
+                }
+            });
+        }
+
         const { address } = await request.json();
         address.userId = userId;
 

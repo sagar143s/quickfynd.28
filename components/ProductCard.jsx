@@ -1,5 +1,5 @@
 "use client";
-import useAuth from "@/lib/useAuth";
+import { useAuth } from "@/lib/useAuth";
 import { ShoppingCartIcon, StarIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'

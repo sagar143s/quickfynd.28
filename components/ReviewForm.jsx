@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { StarIcon } from "lucide-react"
 import Image from "next/image"
@@ -7,16 +7,20 @@ import axios from "axios"
 import { toast } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
-// TODO: Import your Firebase Auth hooks/utilities here
+import { auth } from '../lib/firebase';
 export default function ReviewForm({ productId, onReviewAdded }) {
-    // TODO: Replace with your Firebase Auth state
-    // Example: const user = firebase.auth().currentUser;
-    // Example: const isSignedIn = !!user;
-    // Example: const getToken = async () => user && user.getIdToken();
-    const user = null; // TODO: Replace with actual user object
-    const isSignedIn = false; // TODO: Replace with actual sign-in state
-    const getToken = async () => null; // TODO: Replace with actual token retrieval
-    const router = useRouter()
+    const [user, setUser] = useState(null);
+    const [isSignedIn, setIsSignedIn] = useState(false);
+    const [getToken, setGetToken] = useState(() => async () => null);
+    const router = useRouter();
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+            setUser(firebaseUser);
+            setIsSignedIn(!!firebaseUser);
+            setGetToken(() => async () => firebaseUser ? firebaseUser.getIdToken() : null);
+        });
+        return () => unsubscribe();
+    }, []);
 
     const [showForm, setShowForm] = useState(false)
     const [rating, setRating] = useState(5)
@@ -82,6 +86,7 @@ export default function ReviewForm({ productId, onReviewAdded }) {
     }
 
     if (!showForm) {
+        if (!isSignedIn) return null;
         return (
             <div className="flex items-center justify-center gap-2">
                 <div className="flex gap-1">
@@ -90,11 +95,6 @@ export default function ReviewForm({ productId, onReviewAdded }) {
                             key={star}
                             type="button"
                             onClick={() => {
-                                if (!isSignedIn) {
-                                    toast.error('Please sign in to write a review')
-                                    router.push('/sign-in')
-                                    return
-                                }
                                 setRating(star)
                                 setShowForm(true)
                             }}

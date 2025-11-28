@@ -12,26 +12,22 @@ const KERALA_DISTRICTS = [
     'Alappuzha', 'Ernakulam', 'Idukki', 'Kannur', 'Kasaragod', 'Kollam', 'Kottayam',
     'Kozhikode', 'Malappuram', 'Palakkad', 'Pathanamthitta', 'Thiruvananthapuram', 'Thrissur', 'Wayanad'
 ];
+
 import { addAddress } from '@/lib/features/address/addressSlice';
 import countryList from 'react-select-country-list';
 import { countryCodes } from '@/assets/countryCodes';
-// TODO: Import your Firebase Auth hooks/utilities here
+import { useAuth } from '@/lib/useAuth';
+
 
 const OrderSummary = ({ totalPrice, items }) => {
-    // TODO: Replace with your Firebase Auth state
-    // Example: const user = firebase.auth().currentUser;
-    // Example: const isSignedIn = !!user;
-    // Example: const getToken = async () => user && user.getIdToken();
-    // TODO: Replace with your Firebase Auth state
-    const user = null; // TODO: Replace with actual user object
-    const isSignedIn = false; // TODO: Replace with actual sign-in state
-    const getToken = async () => null; // TODO: Replace with actual token retrieval
-    const dispatch = useDispatch()
+    const { user, loading: authLoading, getToken } = useAuth();
+    const isSignedIn = !!user;
+    const dispatch = useDispatch();
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'AED';
-
     const router = useRouter();
-
     const addressList = useSelector(state => state.address.list);
+    const addressFetchError = useSelector(state => state.address.error);
+    const [addressError, setAddressError] = useState("");
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [selectedAddress, setSelectedAddress] = useState(null);
@@ -71,7 +67,14 @@ const OrderSummary = ({ totalPrice, items }) => {
         if (isSignedIn && addressList.length > 0 && !selectedAddress) {
             setSelectedAddress(addressList[0]);
         }
-    }, [addressList, isSignedIn, selectedAddress]);
+        if (isSignedIn && addressFetchError) {
+            setAddressError(addressFetchError);
+        } else if (isSignedIn && addressList.length === 0) {
+            setAddressError("No addresses found. Please add a new address.");
+        } else {
+            setAddressError("");
+        }
+    }, [addressList, isSignedIn, selectedAddress, addressFetchError]);
 
     // Auto-select guest checkout if not signed in
     useEffect(() => {
@@ -263,91 +266,124 @@ const OrderSummary = ({ totalPrice, items }) => {
         <div className='w-full bg-white rounded-lg shadow-sm border border-gray-200 p-5'>
             <h2 className='text-lg font-bold text-gray-900 mb-4 uppercase'>Order Summary</h2>
             
-            {/* Quick Checkout/User Toggle */}
-            {/* Hide Quick Checkout and sign-in prompt for signed-in users */}
-            {!isSignedIn && (
+            {/* Show shipping address section only for logged-in users (India only) */}
+            {isSignedIn && (
                 <div className='my-4 pb-4 border-b border-slate-200'>
-                    <div className='flex gap-2 items-center'>
-                        <input 
-                            type="checkbox" 
-                            id="guestCheckout" 
-                            checked={isGuestCheckout} 
-                            onChange={(e) => setIsGuestCheckout(e.target.checked)} 
-                            className='accent-orange-500' 
-                        />
-                        <label htmlFor="guestCheckout" className='cursor-pointer text-slate-600 font-medium'>
-                            Quick Checkout
-                        </label>
-                    </div>
+                    <p className='text-slate-600 font-medium mb-3'>Shipping Address</p>
+                    {addressError && (
+                        <div className='text-red-600 text-sm mb-2'>{addressError}</div>
+                    )}
+                    {addressList.length > 0 && (
+                        <select
+                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm mb-2'
+                            value={selectedAddress ? selectedAddress.id : ''}
+                            onChange={e => {
+                                const addr = addressList.find(a => a.id === e.target.value);
+                                setSelectedAddress(addr);
+                            }}
+                        >
+                            <option value='' disabled>Select Address</option>
+                            {addressList.map(addr => (
+                                <option key={addr.id} value={addr.id}>
+                                    {addr.street}, {addr.city}, {addr.state}, {addr.zip}, {addr.country}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <button
+                        type='button'
+                        className='text-orange-600 font-medium underline text-sm mb-2'
+                        onClick={() => setShowAddressModal(true)}
+                    >
+                        + Add New Address
+                    </button>
                 </div>
             )}
 
-            {/* Quick Checkout Information Form */}
-            {!isSignedIn && isGuestCheckout && (
+            {/* Show quick checkout form only for guests (not logged in) */}
+            {!isSignedIn && (
                 <div className='my-4 pb-4 border-b border-slate-200'>
-                    <p className='text-slate-600 font-medium mb-3'>Quick Checkout Information</p>
-                    <div className='space-y-2.5'>
+                    <div className='flex items-center mb-2'>
                         <input
-                            type="text"
-                            placeholder="Full Name *"
-                            value={guestInfo.name}
-                            onChange={e => setGuestInfo({...guestInfo, name: e.target.value})}
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
+                            type='checkbox'
+                            id='guestCheckout'
+                            checked={isGuestCheckout}
+                            onChange={e => setIsGuestCheckout(e.target.checked)}
+                            className='accent-orange-500 mr-2'
                         />
-                        <input
-                            type="email"
-                            placeholder="Email Address *"
-                            value={guestInfo.email}
-                            onChange={e => setGuestInfo({...guestInfo, email: e.target.value})}
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
-                        />
-                        <input
-                            type="tel"
-                            placeholder="Phone Number *"
-                            value={guestInfo.phone}
-                            onChange={e => setGuestInfo({...guestInfo, phone: e.target.value})}
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
-                        />
-                        <textarea
-                            placeholder="Address *"
-                            value={guestInfo.address}
-                            onChange={e => setGuestInfo({...guestInfo, address: e.target.value})}
-                            rows="2"
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm resize-none'
-                        />
-                        <select
-                            value={guestInfo.district}
-                            onChange={e => setGuestInfo({ ...guestInfo, district: e.target.value })}
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
-                            required
+                        <label htmlFor='guestCheckout' className='cursor-pointer text-slate-600 font-medium'>Quick Checkout as Guest</label>
+                        <button
+                            type='button'
+                            className='ml-auto text-blue-600 underline text-sm'
+                            onClick={() => router.push('/sign-in')}
                         >
-                            <option value="">Select District *</option>
-                            {KERALA_DISTRICTS.map(d => (
-                                <option key={d} value={d}>{d}</option>
-                            ))}
-                        </select>
-                        <select
-                            value={guestInfo.state}
-                            disabled
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none bg-gray-100 text-sm'
-                        >
-                            <option value="Kerala">Kerala</option>
-                        </select>
-                        <input
-                            type="text"
-                            placeholder="PIN Code *"
-                            value={guestInfo.pincode}
-                            onChange={e => setGuestInfo({...guestInfo, pincode: e.target.value})}
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
-                        />
-                        <input
-                            type="text"
-                            placeholder="Country *"
-                            value={guestInfo.country}
-                            readOnly
-                            className='border border-slate-300 p-2.5 w-full rounded-lg outline-none bg-gray-100 text-sm'
-                        />
+                            Optional: Sign In
+                        </button>
                     </div>
+                    {isGuestCheckout && (
+                        <div className='space-y-2.5'>
+                            <input
+                                type="text"
+                                placeholder="Full Name *"
+                                value={guestInfo.name}
+                                onChange={e => setGuestInfo({...guestInfo, name: e.target.value})}
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
+                            />
+                            <input
+                                type="email"
+                                placeholder="Email Address *"
+                                value={guestInfo.email}
+                                onChange={e => setGuestInfo({...guestInfo, email: e.target.value})}
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
+                            />
+                            <input
+                                type="tel"
+                                placeholder="Phone Number *"
+                                value={guestInfo.phone}
+                                onChange={e => setGuestInfo({...guestInfo, phone: e.target.value})}
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
+                            />
+                            <textarea
+                                placeholder="Address *"
+                                value={guestInfo.address}
+                                onChange={e => setGuestInfo({...guestInfo, address: e.target.value})}
+                                rows="2"
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm resize-none'
+                            />
+                            <select
+                                value={guestInfo.district}
+                                onChange={e => setGuestInfo({ ...guestInfo, district: e.target.value })}
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
+                                required
+                            >
+                                <option value="">Select District *</option>
+                                {KERALA_DISTRICTS.map(d => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={guestInfo.state}
+                                disabled
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none bg-gray-100 text-sm'
+                            >
+                                <option value="Kerala">Kerala</option>
+                            </select>
+                            <input
+                                type="text"
+                                placeholder="PIN Code *"
+                                value={guestInfo.pincode}
+                                onChange={e => setGuestInfo({...guestInfo, pincode: e.target.value})}
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm'
+                            />
+                            <input
+                                type="text"
+                                placeholder="Country *"
+                                value={guestInfo.country}
+                                readOnly
+                                className='border border-slate-300 p-2.5 w-full rounded-lg outline-none bg-gray-100 text-sm'
+                            />
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -534,7 +570,16 @@ const OrderSummary = ({ totalPrice, items }) => {
                 {loading ? 'Placing Order...' : (!isSignedIn && !isGuestCheckout ? 'Sign In or Use Guest Checkout' : 'Proceed to Checkout')}
             </button>
 
-            {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />}
+            {showAddressModal && (
+                <AddressModal 
+                    setShowAddressModal={setShowAddressModal} 
+                    getToken={getToken}
+                    onAddressAdded={addr => {
+                        setSelectedAddress(addr);
+                        setAddressError("");
+                    }}
+                />
+            )}
 
         </div>
     )

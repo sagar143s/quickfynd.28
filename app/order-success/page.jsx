@@ -3,6 +3,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import Loading from '@/components/Loading';
+import { useAuth } from '@/lib/useAuth';
 
 export default function OrderSuccess() {
   return (
@@ -14,13 +15,41 @@ export default function OrderSuccess() {
 }
 
 
+
 function OrderSuccessContent() {
   const params = useSearchParams();
   const router = useRouter();
   const [orders, setOrders] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading, getToken } = useAuth();
 
   useEffect(() => {
+    const fetchOrder = async (orderId) => {
+      try {
+        let fetchOptions = {};
+        if (user && getToken) {
+          const token = await getToken();
+          fetchOptions.headers = {
+            Authorization: `Bearer ${token}`,
+          };
+        }
+        const res = await fetch(`/api/orders?orderId=${orderId}`, fetchOptions);
+        const data = await res.json();
+        if (data.orders && Array.isArray(data.orders)) {
+          setOrders(data.orders);
+        } else if (data.order) {
+          setOrders([data.order]);
+        } else {
+          setOrders(null);
+        }
+      } catch (err) {
+        setOrders(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (authLoading) return;
     const orderId = params.get('orderId');
     console.log('OrderSuccessContent: orderId from params:', orderId);
     if (!orderId) {
@@ -30,27 +59,7 @@ function OrderSuccessContent() {
     }
     fetchOrder(orderId);
     // eslint-disable-next-line
-  }, [params, router]);
-
-  const fetchOrder = async (orderId) => {
-    try {
-      // Try to fetch by ID for both guests and users
-      const res = await fetch(`/api/orders?orderId=${orderId}`);
-      const data = await res.json();
-      // Support both {order} and {orders} response
-      if (data.orders && Array.isArray(data.orders)) {
-        setOrders(data.orders);
-      } else if (data.order) {
-        setOrders([data.order]);
-      } else {
-        setOrders(null);
-      }
-    } catch (err) {
-      setOrders(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [params, router, user, authLoading, getToken]);
 
   // Use first order for summary
   const order = orders && orders.length > 0 ? orders[0] : null;

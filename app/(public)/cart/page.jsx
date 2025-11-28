@@ -4,11 +4,12 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import Counter from "@/components/Counter";
-import OrderSummary from "@/components/OrderSummary";
+import CartSummaryBox from "@/components/CartSummaryBox";
 import ProductCard from "@/components/ProductCard";
 import { deleteItemFromCart } from "@/lib/features/cart/cartSlice";
 import { PackageIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
+import { fetchShippingSettings, calculateShipping } from '@/lib/shipping';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,8 @@ export default function Cart() {
     const [totalPrice, setTotalPrice] = useState(0);
     const [recentOrders, setRecentOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
+    const [shippingSetting, setShippingSetting] = useState(null);
+    const [shippingFee, setShippingFee] = useState(0);
 
     const createCartArray = () => {
         setTotalPrice(0);
@@ -88,12 +91,28 @@ export default function Cart() {
     }, [cartItems, products]);
 
     useEffect(() => {
+        async function loadShipping() {
+            const setting = await fetchShippingSettings();
+            setShippingSetting(setting);
+        }
+        loadShipping();
+    }, []);
+
+    useEffect(() => {
+        if (shippingSetting && cartArray.length > 0) {
+            setShippingFee(calculateShipping({ cartItems: cartArray, shippingSetting }));
+        } else {
+            setShippingFee(0);
+        }
+    }, [shippingSetting, cartArray]);
+
+    useEffect(() => {
         fetchRecentOrders();
     }, [isSignedIn]);
 
     return (
-        <div className="bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[60vh]">                                                                      {/* Cart Section */}
+        <div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">                                                                      {/* Cart Section */}
                 {cartArray.length > 0 ? (
                     <>
                         {/* Header */}
@@ -104,7 +123,7 @@ export default function Cart() {
                             {/* Cart Items */}
                             <div className="flex-1 space-y-4">        
                                 {cartArray.map((item, index) => (     
-                                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">                                               <div className="flex gap-4">  
+                                    <div key={index} className="rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow" style={{background: 'inherit'}}>                                               <div className="flex gap-4">
                                             {/* Product Image */}     
                                             <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">                                                                <Image
                                                     src={item.images[0]}                                                                                                                        alt={item.name}   
@@ -146,7 +165,11 @@ export default function Cart() {
                             {/* Order Summary - Sticky on Desktop */}
                             <div className="lg:w-[380px]">
                                 <div className="lg:sticky lg:top-6 space-y-6">
-                                    <OrderSummary totalPrice={totalPrice} items={cartArray} />
+                                    <CartSummaryBox
+                                        subtotal={totalPrice}
+                                        shipping={shippingFee}
+                                        total={totalPrice + shippingFee}
+                                    />
                                 </div>
                             </div>
                         </div>

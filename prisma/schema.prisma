@@ -105,7 +105,7 @@ model Order {
   status        OrderStatus   @default(ORDER_PLACED)
   userId        String?
   storeId       String
-  addressId     String
+  addressId     String?
   isPaid        Boolean       @default(false)
   paymentMethod PaymentMethod
   createdAt     DateTime      @default(now())
@@ -125,7 +125,7 @@ model Order {
   // Relations
   user    User?   @relation("BuyerRelation", fields: [userId], references: [id])
   store   Store   @relation(fields: [storeId], references: [id])
-  address Address @relation(fields: [addressId], references: [id])
+  address Address? @relation(fields: [addressId], references: [id])
 }
 
 // Required for creating an OrderItem: orderId, productId, quantity, price
